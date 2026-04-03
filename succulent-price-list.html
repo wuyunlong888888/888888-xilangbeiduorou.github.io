@@ -541,6 +541,15 @@
         /* 批量导入样式 */
         .batch-modal-content {
             max-width: 600px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .batch-modal-body {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
         }
 
         .batch-upload-zone {
@@ -690,6 +699,13 @@
             margin-top: 15px;
             display: flex;
             gap: 10px;
+            flex-shrink: 0;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            position: sticky;
+            bottom: 0;
+            background: #fff;
+            border-radius: 0 0 20px 20px;
         }
 
         /* 无结果提示 */
@@ -906,6 +922,10 @@
             }
 
             /* 批量导入移动端适配 */
+            .batch-modal-content {
+                max-height: 85vh;
+            }
+
             .batch-upload-zone {
                 padding: 20px 15px;
             }
@@ -1099,32 +1119,34 @@
             <h3 class="modal-title">📦 批量导入图片</h3>
             <p style="color:#999;font-size:0.85rem;text-align:center;margin-bottom:15px;">可以多次选择图片，点击"继续添加"累加更多图片</p>
 
-            <!-- 上传区域 -->
-            <div class="batch-upload-zone" id="batchUploadZone">
-                <div class="batch-upload-icon">📁</div>
-                <p>点击选择图片</p>
-                <p style="font-size:0.8rem;color:#bbb;margin-top:5px;">支持 JPG、PNG、WebP 格式</p>
-                <input type="file" id="batchImageInput" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="handleBatchImages(this.files); this.value='';">
-            </div>
-
-            <!-- 继续添加按钮 -->
-            <div class="batch-add-more" id="batchAddMore" style="display:none;">
-                <button class="batch-add-more-btn" onclick="document.getElementById('batchImageInput').click();">➕ 继续添加图片 (已选 <span id="batchCountInline">0</span> 张)</button>
-            </div>
-
-            <!-- 图片预览列表 -->
-            <div class="batch-preview-list" id="batchPreviewList"></div>
-
-            <!-- 统一设置 -->
-            <div class="batch-settings" id="batchSettings" style="display:none;">
-                <div class="form-group">
-                    <label>📅 上架日期</label>
-                    <input type="date" id="batchDate" value="">
+            <div class="batch-modal-body">
+                <!-- 上传区域 -->
+                <div class="batch-upload-zone" id="batchUploadZone">
+                    <div class="batch-upload-icon">📁</div>
+                    <p>点击选择图片</p>
+                    <p style="font-size:0.8rem;color:#bbb;margin-top:5px;">支持 JPG、PNG、WebP 格式</p>
+                    <input type="file" id="batchImageInput" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="handleBatchImages(this.files); this.value='';">
                 </div>
-                <div class="batch-hint">💡 图片导入后，品种名默认取文件名，可随时点击"编辑"修改</div>
+
+                <!-- 继续添加按钮 -->
+                <div class="batch-add-more" id="batchAddMore" style="display:none;">
+                    <button class="batch-add-more-btn" onclick="document.getElementById('batchImageInput').click();">➕ 继续添加图片 (已选 <span id="batchCountInline">0</span> 张)</button>
+                </div>
+
+                <!-- 图片预览列表 -->
+                <div class="batch-preview-list" id="batchPreviewList"></div>
+
+                <!-- 统一设置 -->
+                <div class="batch-settings" id="batchSettings" style="display:none;">
+                    <div class="form-group">
+                        <label>📅 上架日期</label>
+                        <input type="date" id="batchDate">
+                    </div>
+                    <div class="batch-hint">💡 图片导入后，品种名默认取文件名，可随时点击"编辑"修改</div>
+                </div>
             </div>
 
-            <!-- 操作按钮 -->
+            <!-- 操作按钮（始终固定在底部） -->
             <div class="batch-actions" id="batchActions" style="display:none;">
                 <button class="btn-submit" onclick="saveBatchProducts()" style="flex:1;">✅ 确认导入 (<span id="batchCount">0</span>张)</button>
                 <button class="btn-submit" onclick="closeBatchModal()" style="flex:0.6;background:#f5f5f5;color:#666;">取消</button>
@@ -1610,6 +1632,12 @@
             countSpan.textContent = batchImages.length;
             countInline.textContent = batchImages.length;
 
+            // 如果日期为空，默认设为今天
+            const dateInput = document.getElementById('batchDate');
+            if (!dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+
             list.innerHTML = batchImages.map((img, index) => `
                 <div class="batch-preview-item">
                     <span class="item-number">${index + 1}</span>
@@ -1633,11 +1661,7 @@
                 return;
             }
 
-            const date = document.getElementById('batchDate').value;
-            if (!date) {
-                alert('请选择上架日期');
-                return;
-            }
+            const date = document.getElementById('batchDate').value || new Date().toISOString().split('T')[0];
 
             const count = batchImages.length;
 
@@ -1657,8 +1681,15 @@
                 });
             });
 
-            // 保存到本地存储
-            localStorage.setItem('succulentProducts', JSON.stringify(products));
+            // 保存到本地存储（带容量检查）
+            try {
+                localStorage.setItem('succulentProducts', JSON.stringify(products));
+            } catch (e) {
+                // 存储空间不足，移除刚添加的商品并提示
+                products.splice(products.length - count, count);
+                alert('存储空间不足！图片太多或图片太大。\n建议：减少导入数量，或删除一些旧商品后重试。');
+                return;
+            }
 
             // 关闭弹窗并刷新表格
             closeBatchModal();
