@@ -538,6 +538,139 @@
             border-color: #667eea;
         }
 
+        /* 批量导入样式 */
+        .batch-modal-content {
+            max-width: 600px;
+        }
+
+        .batch-upload-zone {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .batch-upload-zone:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .batch-upload-zone.dragover {
+            border-color: #667eea;
+            background: #eef0ff;
+        }
+
+        .batch-upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .batch-upload-zone p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .batch-preview-list {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .batch-preview-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #eee;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .batch-preview-item:hover {
+            border-color: #667eea;
+        }
+
+        .batch-preview-item img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .batch-preview-item .item-number {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: rgba(102, 126, 234, 0.9);
+            color: #fff;
+            font-size: 0.7rem;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .batch-preview-item .item-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(231, 76, 60, 0.9);
+            color: #fff;
+            font-size: 0.75rem;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .batch-preview-item .item-remove:hover {
+            transform: scale(1.2);
+        }
+
+        .batch-preview-item .item-filename {
+            padding: 4px 6px;
+            font-size: 0.7rem;
+            color: #888;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        .batch-settings {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .batch-hint {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #fff9e6;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #d4a017;
+        }
+
+        .batch-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
         /* 无结果提示 */
         .no-result {
             text-align: center;
@@ -749,6 +882,29 @@
                 height: 30px;
                 font-size: 1.2rem;
             }
+
+            /* 批量导入移动端适配 */
+            .batch-upload-zone {
+                padding: 20px 15px;
+            }
+
+            .batch-upload-icon {
+                font-size: 2.5rem;
+            }
+
+            .batch-preview-list {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 8px;
+                max-height: 200px;
+            }
+
+            .batch-preview-item img {
+                height: 70px;
+            }
+
+            .batch-actions {
+                flex-direction: column;
+            }
         }
 
         /* 超小屏幕适配 */
@@ -792,6 +948,7 @@
             <div class="admin-bar" id="adminBar">
                 <span class="admin-bar-title">🔧 管理操作：</span>
                 <button class="btn-add" onclick="showAddModal()">➕ 添加商品</button>
+                <button class="btn-add" onclick="showBatchModal()">📦 批量导入</button>
                 <button class="btn-add" onclick="toggleSortMode()" id="sortBtn">🔀 排序模式</button>
             </div>
 
@@ -911,6 +1068,40 @@
                 <input type="number" id="editPrice" placeholder="0.00" step="0.01">
             </div>
             <button class="btn-submit" onclick="saveProduct()">保存</button>
+        </div>
+    </div>
+
+    <!-- 批量导入图片弹窗 -->
+    <div class="modal" id="batchModal">
+        <div class="modal-content batch-modal-content">
+            <h3 class="modal-title">📦 批量导入图片</h3>
+            <p style="color:#999;font-size:0.85rem;text-align:center;margin-bottom:15px;">选择多张图片，按选择顺序自动排列</p>
+
+            <!-- 上传区域 -->
+            <div class="batch-upload-zone" id="batchUploadZone">
+                <div class="batch-upload-icon">📁</div>
+                <p>点击或拖拽图片到此处</p>
+                <p style="font-size:0.8rem;color:#bbb;margin-top:5px;">支持 JPG、PNG、WebP 格式</p>
+                <input type="file" id="batchImageInput" accept="image/*" multiple style="display:none;" onchange="handleBatchImages(this.files)">
+            </div>
+
+            <!-- 图片预览列表 -->
+            <div class="batch-preview-list" id="batchPreviewList"></div>
+
+            <!-- 统一设置 -->
+            <div class="batch-settings" id="batchSettings" style="display:none;">
+                <div class="form-group">
+                    <label>📅 上架日期</label>
+                    <input type="date" id="batchDate" value="">
+                </div>
+                <div class="batch-hint">💡 提示：每张图片会生成一条记录，您可以导入后逐个编辑名称、规格和价格</div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="batch-actions" id="batchActions" style="display:none;">
+                <button class="btn-submit" onclick="saveBatchProducts()" style="flex:1;">✅ 确认导入 (<span id="batchCount">0</span>张)</button>
+                <button class="btn-submit" onclick="closeBatchModal()" style="flex:0.6;background:#f5f5f5;color:#666;">取消</button>
+            </div>
         </div>
     </div>
 
@@ -1311,7 +1502,167 @@
                 document.getElementById('loginModal').classList.remove('active');
                 document.getElementById('changePassModal').classList.remove('active');
                 document.getElementById('editModal').classList.remove('active');
+                document.getElementById('batchModal').classList.remove('active');
             }
+        });
+
+        // ========== 批量导入图片功能 ==========
+        let batchImages = []; // 存储待导入的图片数据
+
+        // 显示批量导入弹窗
+        function showBatchModal() {
+            batchImages = [];
+            document.getElementById('batchPreviewList').innerHTML = '';
+            document.getElementById('batchSettings').style.display = 'none';
+            document.getElementById('batchActions').style.display = 'none';
+            document.getElementById('batchDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('batchImageInput').value = '';
+            document.getElementById('batchModal').classList.add('active');
+        }
+
+        // 关闭批量导入弹窗
+        function closeBatchModal() {
+            document.getElementById('batchModal').classList.remove('active');
+            batchImages = [];
+        }
+
+        // 处理批量选择的图片文件
+        function handleBatchImages(files) {
+            if (!files || files.length === 0) return;
+
+            const fileArray = Array.from(files);
+            let loadedCount = 0;
+
+            fileArray.forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    batchImages.push({
+                        data: e.target.result,
+                        name: file.name
+                    });
+                    loadedCount++;
+
+                    if (loadedCount === fileArray.length) {
+                        renderBatchPreview();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 渲染批量预览列表
+        function renderBatchPreview() {
+            const list = document.getElementById('batchPreviewList');
+            const settings = document.getElementById('batchSettings');
+            const actions = document.getElementById('batchActions');
+            const countSpan = document.getElementById('batchCount');
+
+            if (batchImages.length === 0) {
+                list.innerHTML = '';
+                settings.style.display = 'none';
+                actions.style.display = 'none';
+                return;
+            }
+
+            settings.style.display = 'block';
+            actions.style.display = 'flex';
+            countSpan.textContent = batchImages.length;
+
+            list.innerHTML = batchImages.map((img, index) => `
+                <div class="batch-preview-item">
+                    <span class="item-number">${index + 1}</span>
+                    <button class="item-remove" onclick="removeBatchImage(${index})">×</button>
+                    <img src="${img.data}" alt="预览">
+                    <div class="item-filename" title="${img.name}">${img.name}</div>
+                </div>
+            `).join('');
+        }
+
+        // 移除单张图片
+        function removeBatchImage(index) {
+            batchImages.splice(index, 1);
+            renderBatchPreview();
+        }
+
+        // 保存批量导入的商品
+        function saveBatchProducts() {
+            if (batchImages.length === 0) {
+                alert('请先选择图片');
+                return;
+            }
+
+            const date = document.getElementById('batchDate').value;
+            if (!date) {
+                alert('请选择上架日期');
+                return;
+            }
+
+            // 按图片顺序逐个创建商品条目
+            batchImages.forEach(img => {
+                // 从文件名中提取品种名（去掉扩展名）
+                let name = img.name.replace(/\.[^.]+$/, '');
+                // 如果文件名太长，截取前15个字符
+                if (name.length > 15) name = name.substring(0, 15);
+
+                products.push({
+                    date: date,
+                    image: img.data,
+                    name: name,
+                    spec: '待编辑',
+                    price: 0.00
+                });
+            });
+
+            // 保存到本地存储
+            localStorage.setItem('succulentProducts', JSON.stringify(products));
+
+            // 关闭弹窗并刷新表格
+            closeBatchModal();
+            renderTable(products);
+
+            alert(`成功导入 ${batchImages.length} 张图片！\n\n请逐个编辑品种名、规格和价格。`);
+        }
+
+        // 批量上传区域的点击和拖拽事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadZone = document.getElementById('batchUploadZone');
+            const fileInput = document.getElementById('batchImageInput');
+
+            // 点击上传区域触发文件选择
+            uploadZone.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            // 拖拽进入
+            uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.add('dragover');
+            });
+
+            // 拖拽离开
+            uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('dragover');
+            });
+
+            // 放下文件
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('dragover');
+
+                const files = e.dataTransfer.files;
+                handleBatchImages(files);
+            });
+
+            // 点击弹窗外部关闭批量导入弹窗
+            document.getElementById('batchModal').addEventListener('click', function(e) {
+                if (e.target === this) closeBatchModal();
+            });
         });
 
         // 初始化
