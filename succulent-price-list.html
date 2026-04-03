@@ -665,6 +665,27 @@
             color: #d4a017;
         }
 
+        .batch-add-more {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .batch-add-more-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+            width: 100%;
+        }
+
+        .batch-add-more-btn:hover {
+            transform: translateY(-2px);
+        }
+
         .batch-actions {
             margin-top: 15px;
             display: flex;
@@ -1076,14 +1097,19 @@
     <div class="modal" id="batchModal">
         <div class="modal-content batch-modal-content">
             <h3 class="modal-title">📦 批量导入图片</h3>
-            <p style="color:#999;font-size:0.85rem;text-align:center;margin-bottom:15px;">选择多张图片，按选择顺序自动排列</p>
+            <p style="color:#999;font-size:0.85rem;text-align:center;margin-bottom:15px;">可以多次选择图片，点击"继续添加"累加更多图片</p>
 
             <!-- 上传区域 -->
             <div class="batch-upload-zone" id="batchUploadZone">
                 <div class="batch-upload-icon">📁</div>
-                <p>点击或拖拽图片到此处</p>
+                <p>点击选择图片</p>
                 <p style="font-size:0.8rem;color:#bbb;margin-top:5px;">支持 JPG、PNG、WebP 格式</p>
-                <input type="file" id="batchImageInput" accept="image/*" multiple style="display:none;" onchange="handleBatchImages(this.files)">
+                <input type="file" id="batchImageInput" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="handleBatchImages(this.files); this.value='';">
+            </div>
+
+            <!-- 继续添加按钮 -->
+            <div class="batch-add-more" id="batchAddMore" style="display:none;">
+                <button class="batch-add-more-btn" onclick="document.getElementById('batchImageInput').click();">➕ 继续添加图片 (已选 <span id="batchCountInline">0</span> 张)</button>
             </div>
 
             <!-- 图片预览列表 -->
@@ -1559,17 +1585,22 @@
             const settings = document.getElementById('batchSettings');
             const actions = document.getElementById('batchActions');
             const countSpan = document.getElementById('batchCount');
+            const countInline = document.getElementById('batchCountInline');
+            const addMore = document.getElementById('batchAddMore');
 
             if (batchImages.length === 0) {
                 list.innerHTML = '';
                 settings.style.display = 'none';
                 actions.style.display = 'none';
+                addMore.style.display = 'none';
                 return;
             }
 
             settings.style.display = 'block';
             actions.style.display = 'flex';
+            addMore.style.display = 'block';
             countSpan.textContent = batchImages.length;
+            countInline.textContent = batchImages.length;
 
             list.innerHTML = batchImages.map((img, index) => `
                 <div class="batch-preview-item">
