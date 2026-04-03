@@ -1121,7 +1121,7 @@
                     <label>📅 上架日期</label>
                     <input type="date" id="batchDate" value="">
                 </div>
-                <div class="batch-hint">💡 提示：每张图片会生成一条记录，您可以导入后逐个编辑名称、规格和价格</div>
+                <div class="batch-hint">💡 图片导入后，品种名默认取文件名，可随时点击"编辑"修改</div>
             </div>
 
             <!-- 操作按钮 -->
@@ -1557,12 +1557,13 @@
         function handleBatchImages(files) {
             if (!files || files.length === 0) return;
 
-            const fileArray = Array.from(files);
+            const fileArray = Array.from(files).filter(f => f.type.startsWith('image/'));
+            if (fileArray.length === 0) return;
+
             let loadedCount = 0;
+            const totalCount = fileArray.length;
 
             fileArray.forEach(file => {
-                if (!file.type.startsWith('image/')) return;
-
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     batchImages.push({
@@ -1571,7 +1572,14 @@
                     });
                     loadedCount++;
 
-                    if (loadedCount === fileArray.length) {
+                    // 所有图片读取完毕后刷新预览
+                    if (loadedCount >= totalCount) {
+                        renderBatchPreview();
+                    }
+                };
+                reader.onerror = function() {
+                    loadedCount++;
+                    if (loadedCount >= totalCount) {
                         renderBatchPreview();
                     }
                 };
@@ -1631,6 +1639,8 @@
                 return;
             }
 
+            const count = batchImages.length;
+
             // 按图片顺序逐个创建商品条目
             batchImages.forEach(img => {
                 // 从文件名中提取品种名（去掉扩展名）
@@ -1654,7 +1664,7 @@
             closeBatchModal();
             renderTable(products);
 
-            alert(`成功导入 ${batchImages.length} 张图片！\n\n请逐个编辑品种名、规格和价格。`);
+            alert('成功导入 ' + count + ' 张图片！');
         }
 
         // 批量上传区域的点击和拖拽事件
