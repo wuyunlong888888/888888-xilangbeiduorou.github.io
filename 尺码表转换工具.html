@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>尺码表转换工具</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --primary: #4f6ef7;
+    --primary-light: #eef1fe;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    --bg: #f5f7fb;
+    --card: #fff;
+    --border: #e2e8f0;
+    --text: #1a202c;
+    --text2: #64748b;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #4f6ef7, #7c3aed); color: #fff; padding: 20px 32px; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .card-title::before { content: ''; width: 4px; height: 20px; background: var(--primary); border-radius: 2px; }
+
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 36px 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: var(--primary-light); }
+  .upload-zone .icon { font-size: 44px; margin-bottom: 10px; }
+  .upload-zone .label { font-size: 16px; font-weight: 600; }
+  .upload-zone .hint { font-size: 13px; color: var(--text2); margin-top: 6px; }
+  .upload-zone input { display: none; }
+
+  .toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #3d5ce0; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover:not(:disabled) { background: #219a52; }
+  .btn-danger { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
+  .btn-danger:hover:not(:disabled) { background: #fef2f2; }
+  .info-tag { font-size: 13px; color: var(--text2); background: var(--bg); padding: 6px 14px; border-radius: 20px; margin-left: auto; }
+
+  .table-wrap { overflow-x: auto; max-height: 520px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f8fafc; position: sticky; top: 0; z-index: 2; font-weight: 600; text-align: left; padding: 10px 14px; border-bottom: 2px solid var(--border); white-space: nowrap; }
+  td { padding: 8px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tr:hover td { background: var(--primary-light); }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-item { background: var(--bg); border-radius: 8px; padding: 14px; text-align: center; }
+  .stat-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+  .stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  .format-box { background: #f0f4ff; border: 1px solid #d0d9f5; border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.8; color: var(--text2); }
+  .format-box b { color: var(--text); }
+
+  .toast { position: fixed; top: 20px; right: 20px; padding: 14px 24px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; z-index: 9999; transform: translateX(120%); transition: transform 0.3s; }
+  .toast.show { transform: translateX(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📐 尺码表 → 商品资料 转换工具</h1>
+  <p>导入颜色规格对照表，自动识别单条/多条，展开生成商品资料并导出 Excel</p>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div class="card-title">📥 导入文件</div>
+    <div class="upload-zone" id="uploadZone">
+      <div class="icon">📁</div>
+      <div class="label">点击或拖拽上传 Excel 文件</div>
+      <div class="hint">支持 .xlsx / .xls / .csv 格式</div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 原表格式说明</div>
+    <div class="format-box">
+      <b>第1行</b>：颜色列表（从B列开始，如 黑色、宝蓝、中蓝…）<br>
+      <b>中间行</b>：按「类型 + 颜色组 + 商品编码」分组<br>
+      &emsp;• 第A列 = 类型标记（如「单条装」「2条装」「3条装」）<br>
+      &emsp;• B~F列 = 该组的颜色（单条装每行1个颜色；多条装每行2~3个颜色）<br>
+      &emsp;• G列 = 商品编码（如 2284-黑色-L 或 2284-2条-组A-L）<br>
+      <b>最后一行</b>：尺码列表（L、XL、XXL、XXXL、XXXXL…）
+    </div>
+  </div>
+
+  <div class="card hidden" id="toolbarCard">
+    <div class="toolbar">
+      <button class="btn btn-primary" id="btnConvert">⚙️ 开始转换</button>
+      <button class="btn btn-success hidden" id="btnExport">📥 导出 Excel</button>
+      <button class="btn btn-danger" id="btnClear">🗑️ 清除</button>
+      <span class="info-tag" id="infoTag"></span>
+    </div>
+  </div>
+
+  <div class="card hidden" id="rawCard">
+    <div class="card-title">📄 原始数据预览</div>
+    <div class="table-wrap"><table id="rawTable"></table></div>
+  </div>
+
+  <div class="hidden" id="statsArea">
+    <div class="stats">
+      <div class="stat-item"><div class="stat-value" id="statColors">0</div><div class="stat-label">颜色数</div></div>
+      <div class="stat-item"><div class="stat-value" id="statSizes">0</div><div class="stat-label">尺码数</div></div>
+      <div class="stat-item"><div class="stat-value" id="statGroups">0</div><div class="stat-label">分组数</div></div>
+      <div class="stat-item"><div class="stat-value" id="statOutput">0</div><div class="stat-label">生成行数</div></div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="resultCard">
+    <div class="card-title">✅ 转换结果</div>
+    <div class="table-wrap"><table id="resultTable"></table></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const OUTPUT_COLS = ['款式编码','商品编码','商品名称','商品简称','颜色及规格','颜色','规格'];
+let gridData = [];
+let parsed = null;
+let resultData = [];
+let sourceFileName = '';
+
+// ── Upload ──
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if(e.target.files.length) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['xlsx','xls','csv'].includes(ext)) { showToast('请上传 Excel 或 CSV 文件', 'error'); return; }
+  sourceFileName = file.name.replace(/\.[^.]+$/, '');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      gridData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (gridData.length < 3) { showToast('文件数据不足（至少需要3行）', 'error'); return; }
+      parsed = parseGrid(gridData);
+      renderRawTable();
+      document.getElementById('toolbarCard').classList.remove('hidden');
+      document.getElementById('rawCard').classList.remove('hidden');
+      document.getElementById('infoTag').textContent =
+        `${parsed.colors.length} 色 · ${parsed.sizes.length} 码 · ${parsed.groups.length} 组`;
+      showToast('文件导入成功', 'success');
+    } catch(err) { showToast('解析失败: ' + err.message, 'error'); console.error(err); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Parse Grid ──
+function parseGrid(rows) {
+  // Row 0: color names (A0=header like "颜色", B0..F0 = actual colors)
+  const colors = [];
+  for (let c = 1; c < rows[0].length; c++) {
+    const v = String(rows[0][c] || '').trim();
+    if (v) colors.push(v);
+  }
+
+  // Find last non-empty row for sizes
+  let lastDataRow = rows.length - 1;
+  while (lastDataRow >= 0) {
+    if (rows[lastDataRow].some(c => String(c||'').trim())) break;
+    lastDataRow--;
+  }
+  const lastRow = rows[lastDataRow];
+  const sizes = [];
+  for (let c = 0; c < lastRow.length; c++) {
+    const v = String(lastRow[c] || '').trim();
+    if (v && !/条/.test(v) && v !== '颜色') sizes.push(v);
+  }
+
+  // Middle rows: groups
+  let currentType = '';
+  const groups = [];
+  for (let r = 1; r < lastDataRow; r++) {
+    const row = rows[r];
+    const a = String(row[0] || '').trim();
+    if (a && /条/.test(a)) currentType = a;
+
+    // find the rightmost non-empty cell = code column
+    let codeIdx = -1;
+    for (let ci = row.length - 1; ci >= 0; ci--) {
+      if (String(row[ci]||'').trim()) { codeIdx = ci; break; }
+    }
+    const code = codeIdx >= 0 ? String(row[codeIdx] || '').trim() : '';
+    if (!code || code === '颜色') continue;
+
+    // Extract colors from columns 1 to codeIdx-1
+    const rowColors = [];
+    for (let ci = 1; ci < codeIdx; ci++) {
+      const v = String(row[ci] || '').trim();
+      if (v) rowColors.push(v);
+    }
+    groups.push({ type: currentType, colors: rowColors, code });
+  }
+
+  return { colors, sizes, groups };
+}
+
+// ── Render Raw ──
+function renderRawTable() {
+  const table = document.getElementById('rawTable');
+  const maxCols = gridData.reduce((m, r) => Math.max(m, r.length), 0);
+  let html = '<thead><tr><th>#</th>';
+  for (let c = 0; c < maxCols; c++) html += `<th>列${String.fromCharCode(65+c)}</th>`;
+  html += '</tr></thead><tbody>';
+  gridData.forEach((row, i) => {
+    html += `<tr><td style="color:var(--text2)">${i+1}</td>`;
+    for (let c = 0; c < maxCols; c++) {
+      const v = String(row[c] || '');
+      const bg = (c === 0 && /条装?$/.test(v)) ? 'background:#eef1fe;font-weight:600;' : '';
+      html += `<td style="${bg}">${esc(v)}</td>`;
+    }
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+// ── Convert ──
+document.getElementById('btnConvert').addEventListener('click', () => {
+  if (!parsed) return;
+  resultData = [];
+  const { sizes, groups } = parsed;
+  const codeParts = groups.length > 0 ? groups[0].code.split('-') : [''];
+  const styleCode = codeParts[0]; // e.g. "2284"
+
+  groups.forEach(g => {
+    const isMulti = g.colors.length > 1;
+    const codeSize = g.code.split('-').pop(); // e.g. "L" from the template code
+    // The code template has a size placeholder — replace it with each actual size
+    const codeBase = g.code.replace(/-[^-]+$/, ''); // remove last segment
+
+    sizes.forEach(size => {
+      const fullCode = codeBase + '-' + size;
+      if (isMulti) {
+        const colorStr = g.colors.join('+');
+        resultData.push({
+          款式编码: styleCode,
+          商品编码: fullCode,
+          商品名称: fullCode,
+          商品简称: fullCode.replace(/-[^-]+$/, ''),
+          颜色及规格: colorStr + '-' + size,
+          颜色: colorStr,
+          规格: size
+        });
+      } else {
+        const color = g.colors[0] || '';
+        resultData.push({
+          款式编码: styleCode,
+          商品编码: fullCode,
+          商品名称: fullCode,
+          商品简称: styleCode + '-' + color,
+          颜色及规格: color + '-' + size,
+          颜色: color,
+          规格: size
+        });
+      }
+    });
+  });
+
+  if (!resultData.length) { showToast('未生成数据，请检查原表格式', 'error'); return; }
+  renderResultTable();
+  document.getElementById('statsArea').classList.remove('hidden');
+  document.getElementById('resultCard').classList.remove('hidden');
+  document.getElementById('btnExport').classList.remove('hidden');
+  document.getElementById('statColors').textContent = parsed.colors.length;
+  document.getElementById('statSizes').textContent = sizes.length;
+  document.getElementById('statGroups').textContent = groups.length;
+  document.getElementById('statOutput').textContent = resultData.length;
+  showToast(`转换完成！生成 ${resultData.length} 行`, 'success');
+});
+
+// ── Render Result ──
+function renderResultTable() {
+  const table = document.getElementById('resultTable');
+  let html = '<thead><tr><th>#</th>';
+  OUTPUT_COLS.forEach(c => html += `<th>${esc(c)}</th>`);
+  html += '</tr></thead><tbody>';
+  resultData.forEach((row, i) => {
+    html += `<tr><td style="color:var(--text2)">${i+1}</td>`;
+    OUTPUT_COLS.forEach(c => html += `<td>${esc(String(row[c]||''))}</td>`);
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+// ── Export ──
+document.getElementById('btnExport').addEventListener('click', () => {
+  if (!resultData.length) return;
+  const aoa = [OUTPUT_COLS];
+  resultData.forEach(row => aoa.push(OUTPUT_COLS.map(c => row[c] || '')));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch:10 },{ wch:22 },{ wch:22 },{ wch:18 },{ wch:20 },{ wch:16 },{ wch:8 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '商品资料');
+  const outName = `${sourceFileName}-商品资料.xlsx`;
+  XLSX.writeFile(wb, outName);
+  showToast(`已导出: ${outName}`, 'success');
+});
+
+// ── Clear ──
+document.getElementById('btnClear').addEventListener('click', () => {
+  gridData = []; parsed = null; resultData = []; sourceFileName = '';
+  document.getElementById('toolbarCard').classList.add('hidden');
+  document.getElementById('rawCard').classList.add('hidden');
+  document.getElementById('resultCard').classList.add('hidden');
+  document.getElementById('statsArea').classList.add('hidden');
+  document.getElementById('btnExport').classList.add('hidden');
+  fileInput.value = '';
+  showToast('已清除', 'success');
+});
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>
