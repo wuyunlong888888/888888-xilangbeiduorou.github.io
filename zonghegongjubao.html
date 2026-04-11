@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电商工具平台</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -16,7 +17,302 @@
             font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
             height: 100vh;
             overflow: hidden;
-            background: #0a0a0f;
+            background: 
+                linear-gradient(135deg, #0a0a1a 0%, #0d1525 50%, #0a0a18 100%);
+            position: relative;
+        }
+
+        /* 科技感背景 - 霓虹光晕 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                /* 左上角青色光晕 */
+                radial-gradient(ellipse at 10% 20%, rgba(0, 255, 255, 0.15) 0%, transparent 40%),
+                /* 右下角紫色光晕 */
+                radial-gradient(ellipse at 90% 80%, rgba(255, 0, 255, 0.12) 0%, transparent 40%),
+                /* 中心蓝色光晕 */
+                radial-gradient(ellipse at 50% 50%, rgba(0, 100, 255, 0.1) 0%, transparent 50%),
+                /* 右上角粉色 */
+                radial-gradient(ellipse at 80% 10%, rgba(255, 100, 200, 0.08) 0%, transparent 35%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 扫描线效果 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 255, 0.03) 2px,
+                rgba(0, 255, 255, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 4;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        /* 3D背景容器 */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 200个粒子 - 随机分布 */
+        .particle:nth-child(1) { left: 2%; animation-delay: 0s; animation-duration: 12s; }
+        .particle:nth-child(2) { left: 5%; animation-delay: 0.5s; animation-duration: 14s; }
+        .particle:nth-child(3) { left: 8%; animation-delay: 1s; animation-duration: 11s; }
+        .particle:nth-child(4) { left: 11%; animation-delay: 1.5s; animation-duration: 13s; }
+        .particle:nth-child(5) { left: 14%; animation-delay: 2s; animation-duration: 15s; }
+        .particle:nth-child(6) { left: 17%; animation-delay: 2.5s; animation-duration: 12s; }
+        .particle:nth-child(7) { left: 20%; animation-delay: 3s; animation-duration: 14s; }
+        .particle:nth-child(8) { left: 23%; animation-delay: 3.5s; animation-duration: 11s; }
+        .particle:nth-child(9) { left: 26%; animation-delay: 4s; animation-duration: 13s; }
+        .particle:nth-child(10) { left: 29%; animation-delay: 4.5s; animation-duration: 15s; }
+        .particle:nth-child(11) { left: 32%; animation-delay: 5s; animation-duration: 12s; }
+        .particle:nth-child(12) { left: 35%; animation-delay: 5.5s; animation-duration: 14s; }
+        .particle:nth-child(13) { left: 38%; animation-delay: 6s; animation-duration: 11s; }
+        .particle:nth-child(14) { left: 41%; animation-delay: 6.5s; animation-duration: 13s; }
+        .particle:nth-child(15) { left: 44%; animation-delay: 7s; animation-duration: 15s; }
+        .particle:nth-child(16) { left: 47%; animation-delay: 7.5s; animation-duration: 12s; }
+        .particle:nth-child(17) { left: 50%; animation-delay: 8s; animation-duration: 14s; }
+        .particle:nth-child(18) { left: 53%; animation-delay: 8.5s; animation-duration: 11s; }
+        .particle:nth-child(19) { left: 56%; animation-delay: 9s; animation-duration: 13s; }
+        .particle:nth-child(20) { left: 59%; animation-delay: 9.5s; animation-duration: 15s; }
+        .particle:nth-child(21) { left: 62%; animation-delay: 10s; animation-duration: 12s; }
+        .particle:nth-child(22) { left: 65%; animation-delay: 10.5s; animation-duration: 14s; }
+        .particle:nth-child(23) { left: 68%; animation-delay: 11s; animation-duration: 11s; }
+        .particle:nth-child(24) { left: 71%; animation-delay: 11.5s; animation-duration: 13s; }
+        .particle:nth-child(25) { left: 74%; animation-delay: 12s; animation-duration: 15s; }
+        .particle:nth-child(26) { left: 77%; animation-delay: 12.5s; animation-duration: 12s; }
+        .particle:nth-child(27) { left: 80%; animation-delay: 13s; animation-duration: 14s; }
+        .particle:nth-child(28) { left: 83%; animation-delay: 13.5s; animation-duration: 11s; }
+        .particle:nth-child(29) { left: 86%; animation-delay: 14s; animation-duration: 13s; }
+        .particle:nth-child(30) { left: 89%; animation-delay: 14.5s; animation-duration: 15s; }
+        .particle:nth-child(31) { left: 92%; animation-delay: 0.2s; animation-duration: 12s; }
+        .particle:nth-child(32) { left: 95%; animation-delay: 0.7s; animation-duration: 14s; }
+        .particle:nth-child(33) { left: 98%; animation-delay: 1.2s; animation-duration: 11s; }
+        .particle:nth-child(34) { left: 3%; animation-delay: 1.7s; animation-duration: 13s; }
+        .particle:nth-child(35) { left: 6%; animation-delay: 2.2s; animation-duration: 15s; }
+        .particle:nth-child(36) { left: 9%; animation-delay: 2.7s; animation-duration: 12s; }
+        .particle:nth-child(37) { left: 12%; animation-delay: 3.2s; animation-duration: 14s; }
+        .particle:nth-child(38) { left: 15%; animation-delay: 3.7s; animation-duration: 11s; }
+        .particle:nth-child(39) { left: 18%; animation-delay: 4.2s; animation-duration: 13s; }
+        .particle:nth-child(40) { left: 21%; animation-delay: 4.7s; animation-duration: 15s; }
+        .particle:nth-child(41) { left: 24%; animation-delay: 5.2s; animation-duration: 12s; }
+        .particle:nth-child(42) { left: 27%; animation-delay: 5.7s; animation-duration: 14s; }
+        .particle:nth-child(43) { left: 30%; animation-delay: 6.2s; animation-duration: 11s; }
+        .particle:nth-child(44) { left: 33%; animation-delay: 6.7s; animation-duration: 13s; }
+        .particle:nth-child(45) { left: 36%; animation-delay: 7.2s; animation-duration: 15s; }
+        .particle:nth-child(46) { left: 39%; animation-delay: 7.7s; animation-duration: 12s; }
+        .particle:nth-child(47) { left: 42%; animation-delay: 8.2s; animation-duration: 14s; }
+        .particle:nth-child(48) { left: 45%; animation-delay: 8.7s; animation-duration: 11s; }
+        .particle:nth-child(49) { left: 48%; animation-delay: 9.2s; animation-duration: 13s; }
+        .particle:nth-child(50) { left: 51%; animation-delay: 9.7s; animation-duration: 15s; }
+        .particle:nth-child(51) { left: 54%; animation-delay: 10.2s; animation-duration: 12s; }
+        .particle:nth-child(52) { left: 57%; animation-delay: 10.7s; animation-duration: 14s; }
+        .particle:nth-child(53) { left: 60%; animation-delay: 11.2s; animation-duration: 11s; }
+        .particle:nth-child(54) { left: 63%; animation-delay: 11.7s; animation-duration: 13s; }
+        .particle:nth-child(55) { left: 66%; animation-delay: 12.2s; animation-duration: 15s; }
+        .particle:nth-child(56) { left: 69%; animation-delay: 12.7s; animation-duration: 12s; }
+        .particle:nth-child(57) { left: 72%; animation-delay: 13.2s; animation-duration: 14s; }
+        .particle:nth-child(58) { left: 75%; animation-delay: 13.7s; animation-duration: 11s; }
+        .particle:nth-child(59) { left: 78%; animation-delay: 14.2s; animation-duration: 13s; }
+        .particle:nth-child(60) { left: 81%; animation-delay: 14.7s; animation-duration: 15s; }
+        .particle:nth-child(61) { left: 84%; animation-delay: 0.3s; animation-duration: 12s; }
+        .particle:nth-child(62) { left: 87%; animation-delay: 0.8s; animation-duration: 14s; }
+        .particle:nth-child(63) { left: 90%; animation-delay: 1.3s; animation-duration: 11s; }
+        .particle:nth-child(64) { left: 93%; animation-delay: 1.8s; animation-duration: 13s; }
+        .particle:nth-child(65) { left: 96%; animation-delay: 2.3s; animation-duration: 15s; }
+        .particle:nth-child(66) { left: 1%; animation-delay: 2.8s; animation-duration: 12s; }
+        .particle:nth-child(67) { left: 4%; animation-delay: 3.3s; animation-duration: 14s; }
+        .particle:nth-child(68) { left: 7%; animation-delay: 3.8s; animation-duration: 11s; }
+        .particle:nth-child(69) { left: 10%; animation-delay: 4.3s; animation-duration: 13s; }
+        .particle:nth-child(70) { left: 13%; animation-delay: 4.8s; animation-duration: 15s; }
+        .particle:nth-child(71) { left: 16%; animation-delay: 5.3s; animation-duration: 12s; }
+        .particle:nth-child(72) { left: 19%; animation-delay: 5.8s; animation-duration: 14s; }
+        .particle:nth-child(73) { left: 22%; animation-delay: 6.3s; animation-duration: 11s; }
+        .particle:nth-child(74) { left: 25%; animation-delay: 6.8s; animation-duration: 13s; }
+        .particle:nth-child(75) { left: 28%; animation-delay: 7.3s; animation-duration: 15s; }
+        .particle:nth-child(76) { left: 31%; animation-delay: 7.8s; animation-duration: 12s; }
+        .particle:nth-child(77) { left: 34%; animation-delay: 8.3s; animation-duration: 14s; }
+        .particle:nth-child(78) { left: 37%; animation-delay: 8.8s; animation-duration: 11s; }
+        .particle:nth-child(79) { left: 40%; animation-delay: 9.3s; animation-duration: 13s; }
+        .particle:nth-child(80) { left: 43%; animation-delay: 9.8s; animation-duration: 15s; }
+        .particle:nth-child(81) { left: 46%; animation-delay: 10.3s; animation-duration: 12s; }
+        .particle:nth-child(82) { left: 49%; animation-delay: 10.8s; animation-duration: 14s; }
+        .particle:nth-child(83) { left: 52%; animation-delay: 11.3s; animation-duration: 11s; }
+        .particle:nth-child(84) { left: 55%; animation-delay: 11.8s; animation-duration: 13s; }
+        .particle:nth-child(85) { left: 58%; animation-delay: 12.3s; animation-duration: 15s; }
+        .particle:nth-child(86) { left: 61%; animation-delay: 12.8s; animation-duration: 12s; }
+        .particle:nth-child(87) { left: 64%; animation-delay: 13.3s; animation-duration: 14s; }
+        .particle:nth-child(88) { left: 67%; animation-delay: 13.8s; animation-duration: 11s; }
+        .particle:nth-child(89) { left: 70%; animation-delay: 14.3s; animation-duration: 13s; }
+        .particle:nth-child(90) { left: 73%; animation-delay: 14.8s; animation-duration: 15s; }
+        .particle:nth-child(91) { left: 76%; animation-delay: 0.4s; animation-duration: 12s; }
+        .particle:nth-child(92) { left: 79%; animation-delay: 0.9s; animation-duration: 14s; }
+        .particle:nth-child(93) { left: 82%; animation-delay: 1.4s; animation-duration: 11s; }
+        .particle:nth-child(94) { left: 85%; animation-delay: 1.9s; animation-duration: 13s; }
+        .particle:nth-child(95) { left: 88%; animation-delay: 2.4s; animation-duration: 15s; }
+        .particle:nth-child(96) { left: 91%; animation-delay: 2.9s; animation-duration: 12s; }
+        .particle:nth-child(97) { left: 94%; animation-delay: 3.4s; animation-duration: 14s; }
+        .particle:nth-child(98) { left: 97%; animation-delay: 3.9s; animation-duration: 11s; }
+        .particle:nth-child(99) { left: 0.5%; animation-delay: 4.4s; animation-duration: 13s; }
+        .particle:nth-child(100) { left: 99.5%; animation-delay: 4.9s; animation-duration: 15s; }
+        .particle:nth-child(101) { left: 1.5%; animation-delay: 5.4s; animation-duration: 12s; }
+        .particle:nth-child(102) { left: 4.5%; animation-delay: 5.9s; animation-duration: 14s; }
+        .particle:nth-child(103) { left: 7.5%; animation-delay: 6.4s; animation-duration: 11s; }
+        .particle:nth-child(104) { left: 10.5%; animation-delay: 6.9s; animation-duration: 13s; }
+        .particle:nth-child(105) { left: 13.5%; animation-delay: 7.4s; animation-duration: 15s; }
+        .particle:nth-child(106) { left: 16.5%; animation-delay: 7.9s; animation-duration: 12s; }
+        .particle:nth-child(107) { left: 19.5%; animation-delay: 8.4s; animation-duration: 14s; }
+        .particle:nth-child(108) { left: 22.5%; animation-delay: 8.9s; animation-duration: 11s; }
+        .particle:nth-child(109) { left: 25.5%; animation-delay: 9.4s; animation-duration: 13s; }
+        .particle:nth-child(110) { left: 28.5%; animation-delay: 9.9s; animation-duration: 15s; }
+        .particle:nth-child(111) { left: 31.5%; animation-delay: 10.4s; animation-duration: 12s; }
+        .particle:nth-child(112) { left: 34.5%; animation-delay: 10.9s; animation-duration: 14s; }
+        .particle:nth-child(113) { left: 37.5%; animation-delay: 11.4s; animation-duration: 11s; }
+        .particle:nth-child(114) { left: 40.5%; animation-delay: 11.9s; animation-duration: 13s; }
+        .particle:nth-child(115) { left: 43.5%; animation-delay: 12.4s; animation-duration: 15s; }
+        .particle:nth-child(116) { left: 46.5%; animation-delay: 12.9s; animation-duration: 12s; }
+        .particle:nth-child(117) { left: 49.5%; animation-delay: 13.4s; animation-duration: 14s; }
+        .particle:nth-child(118) { left: 52.5%; animation-delay: 13.9s; animation-duration: 11s; }
+        .particle:nth-child(119) { left: 55.5%; animation-delay: 0.1s; animation-duration: 13s; }
+        .particle:nth-child(120) { left: 58.5%; animation-delay: 0.6s; animation-duration: 15s; }
+        .particle:nth-child(121) { left: 61.5%; animation-delay: 1.1s; animation-duration: 12s; }
+        .particle:nth-child(122) { left: 64.5%; animation-delay: 1.6s; animation-duration: 14s; }
+        .particle:nth-child(123) { left: 67.5%; animation-delay: 2.1s; animation-duration: 11s; }
+        .particle:nth-child(124) { left: 70.5%; animation-delay: 2.6s; animation-duration: 13s; }
+        .particle:nth-child(125) { left: 73.5%; animation-delay: 3.1s; animation-duration: 15s; }
+        .particle:nth-child(126) { left: 76.5%; animation-delay: 3.6s; animation-duration: 12s; }
+        .particle:nth-child(127) { left: 79.5%; animation-delay: 4.1s; animation-duration: 14s; }
+        .particle:nth-child(128) { left: 82.5%; animation-delay: 4.6s; animation-duration: 11s; }
+        .particle:nth-child(129) { left: 85.5%; animation-delay: 5.1s; animation-duration: 13s; }
+        .particle:nth-child(130) { left: 88.5%; animation-delay: 5.6s; animation-duration: 15s; }
+        .particle:nth-child(131) { left: 91.5%; animation-delay: 6.1s; animation-duration: 12s; }
+        .particle:nth-child(132) { left: 94.5%; animation-delay: 6.6s; animation-duration: 14s; }
+        .particle:nth-child(133) { left: 97.5%; animation-delay: 7.1s; animation-duration: 11s; }
+        .particle:nth-child(134) { left: 0.8%; animation-delay: 7.6s; animation-duration: 13s; }
+        .particle:nth-child(135) { left: 3.8%; animation-delay: 8.1s; animation-duration: 15s; }
+        .particle:nth-child(136) { left: 6.8%; animation-delay: 8.6s; animation-duration: 12s; }
+        .particle:nth-child(137) { left: 9.8%; animation-delay: 9.1s; animation-duration: 14s; }
+        .particle:nth-child(138) { left: 12.8%; animation-delay: 9.6s; animation-duration: 11s; }
+        .particle:nth-child(139) { left: 15.8%; animation-delay: 10.1s; animation-duration: 13s; }
+        .particle:nth-child(140) { left: 18.8%; animation-delay: 10.6s; animation-duration: 15s; }
+        .particle:nth-child(141) { left: 21.8%; animation-delay: 11.1s; animation-duration: 12s; }
+        .particle:nth-child(142) { left: 24.8%; animation-delay: 11.6s; animation-duration: 14s; }
+        .particle:nth-child(143) { left: 27.8%; animation-delay: 12.1s; animation-duration: 11s; }
+        .particle:nth-child(144) { left: 30.8%; animation-delay: 12.6s; animation-duration: 13s; }
+        .particle:nth-child(145) { left: 33.8%; animation-delay: 13.1s; animation-duration: 15s; }
+        .particle:nth-child(146) { left: 36.8%; animation-delay: 13.6s; animation-duration: 12s; }
+        .particle:nth-child(147) { left: 39.8%; animation-delay: 0.15s; animation-duration: 14s; }
+        .particle:nth-child(148) { left: 42.8%; animation-delay: 0.65s; animation-duration: 11s; }
+        .particle:nth-child(149) { left: 45.8%; animation-delay: 1.15s; animation-duration: 13s; }
+        .particle:nth-child(150) { left: 48.8%; animation-delay: 1.65s; animation-duration: 15s; }
+        .particle:nth-child(151) { left: 51.8%; animation-delay: 2.15s; animation-duration: 12s; }
+        .particle:nth-child(152) { left: 54.8%; animation-delay: 2.65s; animation-duration: 14s; }
+        .particle:nth-child(153) { left: 57.8%; animation-delay: 3.15s; animation-duration: 11s; }
+        .particle:nth-child(154) { left: 60.8%; animation-delay: 3.65s; animation-duration: 13s; }
+        .particle:nth-child(155) { left: 63.8%; animation-delay: 4.15s; animation-duration: 15s; }
+        .particle:nth-child(156) { left: 66.8%; animation-delay: 4.65s; animation-duration: 12s; }
+        .particle:nth-child(157) { left: 69.8%; animation-delay: 5.15s; animation-duration: 14s; }
+        .particle:nth-child(158) { left: 72.8%; animation-delay: 5.65s; animation-duration: 11s; }
+        .particle:nth-child(159) { left: 75.8%; animation-delay: 6.15s; animation-duration: 13s; }
+        .particle:nth-child(160) { left: 78.8%; animation-delay: 6.65s; animation-duration: 15s; }
+        .particle:nth-child(161) { left: 81.8%; animation-delay: 7.15s; animation-duration: 12s; }
+        .particle:nth-child(162) { left: 84.8%; animation-delay: 7.65s; animation-duration: 14s; }
+        .particle:nth-child(163) { left: 87.8%; animation-delay: 8.15s; animation-duration: 11s; }
+        .particle:nth-child(164) { left: 90.8%; animation-delay: 8.65s; animation-duration: 13s; }
+        .particle:nth-child(165) { left: 93.8%; animation-delay: 9.15s; animation-duration: 15s; }
+        .particle:nth-child(166) { left: 96.8%; animation-delay: 9.65s; animation-duration: 12s; }
+        .particle:nth-child(167) { left: 2.2%; animation-delay: 10.15s; animation-duration: 14s; }
+        .particle:nth-child(168) { left: 5.2%; animation-delay: 10.65s; animation-duration: 11s; }
+        .particle:nth-child(169) { left: 8.2%; animation-delay: 11.15s; animation-duration: 13s; }
+        .particle:nth-child(170) { left: 11.2%; animation-delay: 11.65s; animation-duration: 15s; }
+        .particle:nth-child(171) { left: 14.2%; animation-delay: 12.15s; animation-duration: 12s; }
+        .particle:nth-child(172) { left: 17.2%; animation-delay: 12.65s; animation-duration: 14s; }
+        .particle:nth-child(173) { left: 20.2%; animation-delay: 13.15s; animation-duration: 11s; }
+        .particle:nth-child(174) { left: 23.2%; animation-delay: 13.65s; animation-duration: 13s; }
+        .particle:nth-child(175) { left: 26.2%; animation-delay: 0.25s; animation-duration: 15s; }
+        .particle:nth-child(176) { left: 29.2%; animation-delay: 0.75s; animation-duration: 12s; }
+        .particle:nth-child(177) { left: 32.2%; animation-delay: 1.25s; animation-duration: 14s; }
+        .particle:nth-child(178) { left: 35.2%; animation-delay: 1.75s; animation-duration: 11s; }
+        .particle:nth-child(179) { left: 38.2%; animation-delay: 2.25s; animation-duration: 13s; }
+        .particle:nth-child(180) { left: 41.2%; animation-delay: 2.75s; animation-duration: 15s; }
+        .particle:nth-child(181) { left: 44.2%; animation-delay: 3.25s; animation-duration: 12s; }
+        .particle:nth-child(182) { left: 47.2%; animation-delay: 3.75s; animation-duration: 14s; }
+        .particle:nth-child(183) { left: 50.2%; animation-delay: 4.25s; animation-duration: 11s; }
+        .particle:nth-child(184) { left: 53.2%; animation-delay: 4.75s; animation-duration: 13s; }
+        .particle:nth-child(185) { left: 56.2%; animation-delay: 5.25s; animation-duration: 15s; }
+        .particle:nth-child(186) { left: 59.2%; animation-delay: 5.75s; animation-duration: 12s; }
+        .particle:nth-child(187) { left: 62.2%; animation-delay: 6.25s; animation-duration: 14s; }
+        .particle:nth-child(188) { left: 65.2%; animation-delay: 6.75s; animation-duration: 11s; }
+        .particle:nth-child(189) { left: 68.2%; animation-delay: 7.25s; animation-duration: 13s; }
+        .particle:nth-child(190) { left: 71.2%; animation-delay: 7.75s; animation-duration: 15s; }
+        .particle:nth-child(191) { left: 74.2%; animation-delay: 8.25s; animation-duration: 12s; }
+        .particle:nth-child(192) { left: 77.2%; animation-delay: 8.75s; animation-duration: 14s; }
+        .particle:nth-child(193) { left: 80.2%; animation-delay: 9.25s; animation-duration: 11s; }
+        .particle:nth-child(194) { left: 83.2%; animation-delay: 9.75s; animation-duration: 13s; }
+        .particle:nth-child(195) { left: 86.2%; animation-delay: 10.25s; animation-duration: 15s; }
+        .particle:nth-child(196) { left: 89.2%; animation-delay: 10.75s; animation-duration: 12s; }
+        .particle:nth-child(197) { left: 92.2%; animation-delay: 11.25s; animation-duration: 14s; }
+        .particle:nth-child(198) { left: 95.2%; animation-delay: 11.75s; animation-duration: 11s; }
+        .particle:nth-child(199) { left: 98.2%; animation-delay: 12.25s; animation-duration: 13s; }
+        .particle:nth-child(200) { left: 0.2%; animation-delay: 12.75s; animation-duration: 15s; }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.8;
+            }
+            95% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* 径向渐变光晕 - 更柔和 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 100vmax;
+            height: 100vmax;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(ellipse at center, 
+                rgba(30, 30, 60, 0) 0%, 
+                rgba(20, 20, 40, 0.4) 60%,
+                rgba(15, 15, 35, 0.7) 100%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         .container {
@@ -29,6 +325,7 @@
             overflow-y: auto;
             padding: 16px;
             position: relative;
+            z-index: 2;
         }
 
         .panel-main {
@@ -47,62 +344,74 @@
             flex-shrink: 0;
         }
 
-        /* 背景渐变 */
+        /* 背景渐变 - 更亮更通透 */
         .panel-left {
-            background: linear-gradient(135deg, #1a0a0e 0%, #0f172a 50%, #0a0a0f 100%);
+            background: linear-gradient(180deg, 
+                rgba(239, 68, 68, 0.15) 0%, 
+                rgba(30, 30, 50, 0.3) 40%, 
+                rgba(20, 20, 35, 0.5) 100%);
         }
 
         .panel-center {
-            background: linear-gradient(135deg, #1a1205 0%, #1c1917 50%, #0a0a0f 100%);
+            background: linear-gradient(180deg, 
+                rgba(245, 158, 11, 0.15) 0%, 
+                rgba(30, 30, 50, 0.3) 40%, 
+                rgba(20, 20, 35, 0.5) 100%);
         }
 
         .panel-right-main {
-            background: linear-gradient(135deg, #0a1a15 0%, #0f1f1a 50%, #0a0a0f 100%);
+            background: linear-gradient(180deg, 
+                rgba(16, 185, 129, 0.15) 0%, 
+                rgba(30, 30, 50, 0.3) 40%, 
+                rgba(20, 20, 35, 0.5) 50%);
         }
 
         .panel-left-extra {
-            background: linear-gradient(135deg, #0a1a1a 0%, #0f1a1a 50%, #0a0a0f 100%);
+            background: linear-gradient(180deg, 
+                rgba(6, 182, 212, 0.15) 0%, 
+                rgba(30, 30, 50, 0.3) 40%, 
+                rgba(20, 20, 35, 0.5) 100%);
         }
 
-        /* 光效装饰 */
+        /* 光效装饰 - 科技感霓虹 */
         .glow {
             position: absolute;
             border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.25;
+            filter: blur(100px);
+            opacity: 0.6;
             pointer-events: none;
         }
 
         .panel-left .glow {
-            width: 200px;
-            height: 200px;
-            background: #ef4444;
-            top: -50px;
-            left: -30px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 50, 100, 0.8) 0%, rgba(255, 0, 100, 0.2) 50%, transparent 70%);
+            top: -120px;
+            left: -120px;
         }
 
         .panel-center .glow {
-            width: 200px;
-            height: 200px;
-            background: #f59e0b;
-            top: -50px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 200, 50, 0.8) 0%, rgba(255, 150, 0, 0.2) 50%, transparent 70%);
+            top: -120px;
             left: 50%;
             transform: translateX(-50%);
         }
 
         .panel-right-main .glow {
-            width: 200px;
-            height: 200px;
-            background: #10b981;
-            top: -50px;
-            right: -30px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(50, 255, 150, 0.8) 0%, rgba(0, 255, 100, 0.2) 50%, transparent 70%);
+            top: -120px;
+            right: -120px;
         }
 
         .panel-left-extra .glow {
-            width: 150px;
-            height: 150px;
-            background: #06b6d4;
-            top: -30px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.8) 0%, rgba(0, 200, 255, 0.2) 50%, transparent 70%);
+            top: -80px;
             left: 50%;
             transform: translateX(-50%);
         }
@@ -476,17 +785,25 @@
             border-radius: 2px;
         }
 
-        /* 分割线 */
+        /* 分割线 - 发光效果 */
         .divider {
             width: 1px;
-            background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent 100%);
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                rgba(255,255,255,0.1) 10%, 
+                rgba(255,255,255,0.15) 50%, 
+                rgba(255,255,255,0.1) 90%, 
+                transparent 100%);
             position: relative;
-            z-index: 10;
+            z-index: 2;
             flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(255,255,255,0.05);
         }
     </style>
 </head>
 <body>
+    <!-- 3D背景 -->
+    <canvas id="bg-canvas"></canvas>
     <div class="container">
         <!-- 左侧：拼多多电商工具 -->
         <div class="panel panel-left">
@@ -855,5 +1172,189 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // 3D几何体背景
+        const canvas = document.getElementById('bg-canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        // 创建多个几何体
+        const geometries = [];
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x00ffff, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        
+        // 十二面体 - 分散位置
+        const dodecaGeometry = new THREE.DodecahedronGeometry(6);
+        const dodecaMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x00ffff, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2
+        });
+        const dodeca = new THREE.Mesh(dodecaGeometry, dodecaMaterial);
+        dodeca.position.set(0, 0, -15);
+        scene.add(dodeca);
+        geometries.push(dodeca);
+        
+        // 球体线框 - 分散位置
+        const sphereGeometry = new THREE.SphereGeometry(5, 16, 16);
+        const sphereMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xff00ff, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.18
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(-18, 8, -20);
+        scene.add(sphere);
+        geometries.push(sphere);
+        
+        // 圆锥体 - 分散位置
+        const coneGeometry = new THREE.ConeGeometry(4, 10, 8);
+        const coneMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x00ff88, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2
+        });
+        const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+        cone.position.set(15, -5, -18);
+        scene.add(cone);
+        geometries.push(cone);
+        
+        // 圆柱体 - 分散位置
+        const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 8, 12);
+        const cylinderMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xff6600, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.18
+        });
+        const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+        cylinder.position.set(-12, -10, -16);
+        scene.add(cylinder);
+        geometries.push(cylinder);
+        
+        // 圆环结 - 分散位置
+        const knotGeometry = new THREE.TorusKnotGeometry(3, 1, 64, 8);
+        const knotMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xffff00, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.15
+        });
+        const knot = new THREE.Mesh(knotGeometry, knotMaterial);
+        knot.position.set(12, 10, -14);
+        scene.add(knot);
+        geometries.push(knot);
+        
+        // 小几何体群 - 更分散
+        for (let i = 0; i < 20; i++) {
+            const size = Math.random() * 2 + 0.8;
+            const smallGeo = new THREE.IcosahedronGeometry(size);
+            const smallMat = new THREE.MeshBasicMaterial({ 
+                color: new THREE.Color().setHSL(Math.random() * 0.3 + 0.5, 1, 0.5),
+                wireframe: true,
+                transparent: true,
+                opacity: 0.12
+            });
+            const smallMesh = new THREE.Mesh(smallGeo, smallMat);
+            smallMesh.position.set(
+                (Math.random() - 0.5) * 50,
+                (Math.random() - 0.5) * 35,
+                (Math.random() - 0.5) * 25 - 10
+            );
+            smallMesh.userData = {
+                rotSpeed: {
+                    x: (Math.random() - 0.5) * 0.02,
+                    y: (Math.random() - 0.5) * 0.02,
+                    z: (Math.random() - 0.5) * 0.02
+                }
+            };
+            scene.add(smallMesh);
+            geometries.push(smallMesh);
+        }
+        
+        // 粒子系统
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 800;
+        const posArray = new Float32Array(particlesCount * 3);
+        
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 50;
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.6
+        });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        camera.position.z = 5;
+        
+        // 动画循环
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.005;
+            
+            // 旋转主要几何体
+            dodeca.rotation.x += 0.002;
+            dodeca.rotation.y += 0.004;
+            
+            sphere.rotation.x -= 0.003;
+            sphere.rotation.y += 0.002;
+            
+            cone.rotation.x += 0.002;
+            cone.rotation.z += 0.003;
+            
+            cylinder.rotation.x += 0.002;
+            cylinder.rotation.y += 0.003;
+            
+            knot.rotation.x += 0.001;
+            knot.rotation.y += 0.002;
+            
+            // 小几何体旋转
+            geometries.forEach((geo, index) => {
+                if (geo.userData && geo.userData.rotSpeed) {
+                    geo.rotation.x += geo.userData.rotSpeed.x;
+                    geo.rotation.y += geo.userData.rotSpeed.y;
+                    geo.rotation.z += geo.userData.rotSpeed.z;
+                }
+            });
+            
+            // 粒子缓慢旋转
+            particlesMesh.rotation.y += 0.0005;
+            
+            // 相机轻微摆动
+            camera.position.x = Math.sin(time) * 0.5;
+            camera.position.y = Math.cos(time * 0.7) * 0.3;
+            camera.lookAt(0, 0, -5);
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // 响应窗口大小变化
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
