@@ -48,15 +48,23 @@
         }
 
         .panel-left::before {
-            background: radial-gradient(ellipse at 20% 0%, rgba(239, 68, 68, 0.15) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 50% 0%, rgba(239, 68, 68, 0.15) 0%, transparent 60%);
         }
 
-        .panel-right {
+        .panel-center {
             background: linear-gradient(180deg, #1c1917 0%, #0f172a 100%);
         }
 
+        .panel-center::before {
+            background: radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.15) 0%, transparent 60%);
+        }
+
+        .panel-right {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        }
+
         .panel-right::before {
-            background: radial-gradient(ellipse at 80% 0%, rgba(245, 158, 11, 0.15) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 60%);
         }
 
         .panel-content {
@@ -96,9 +104,14 @@
             box-shadow: 0 8px 32px rgba(239, 68, 68, 0.5);
         }
 
-        .panel-right .panel-logo {
+        .panel-center .panel-logo {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             box-shadow: 0 8px 32px rgba(245, 158, 11, 0.5);
+        }
+
+        .panel-right .panel-logo {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.5);
         }
 
         .panel-info {
@@ -113,6 +126,10 @@
         }
 
         .panel-left .panel-title {
+            color: #ffffff;
+        }
+
+        .panel-center .panel-title {
             color: #ffffff;
         }
 
@@ -157,33 +174,20 @@
             background: linear-gradient(90deg, rgba(239, 68, 68, 0.3), transparent);
         }
 
-        .panel-right .section-title {
+        .panel-center .section-title {
             color: #fbbf24;
         }
 
-        .panel-right .section-title::after {
+        .panel-center .section-title::after {
             background: linear-gradient(90deg, rgba(245, 158, 11, 0.3), transparent);
         }
 
-        /* 运营工具中心 - 大字号样式 */
-        .tool-section.featured {
-            margin-bottom: 32px;
+        .panel-right .section-title {
+            color: #60a5fa;
         }
 
-        .tool-section.featured .section-title {
-            font-size: 36px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .tool-section.featured .section-title::after {
-            height: 2px;
+        .panel-right .section-title::after {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.3), transparent);
         }
 
         /* 运营工具中心 - 大字号样式 */
@@ -248,9 +252,14 @@
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
-        .panel-right .tool-section.featured .tool-icon {
+        .panel-center .tool-section.featured .tool-icon {
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(245, 158, 11, 0.1));
             border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .panel-right .tool-section.featured .tool-icon {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
 
         .tool-section.featured .tool-name {
@@ -306,9 +315,14 @@
             border-color: rgba(239, 68, 68, 0.3);
         }
 
-        .panel-right .tool-card:hover {
+        .panel-center .tool-card:hover {
             box-shadow: 0 20px 40px rgba(245, 158, 11, 0.15);
             border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .panel-right .tool-card:hover {
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
         }
 
         /* 工具图标容器 */
@@ -329,9 +343,14 @@
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
-        .panel-right .tool-icon {
+        .panel-center .tool-icon {
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
             border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .panel-right .tool-icon {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
+            border: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         .tool-name {
@@ -353,8 +372,12 @@
             background: linear-gradient(135deg, #ef4444, #dc2626);
         }
 
-        .panel-right .floating-shape {
+        .panel-center .floating-shape {
             background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .panel-right .floating-shape {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
         }
 
         .shape-1 {
@@ -396,15 +419,22 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        /* 中间分割线 */
+        /* 分割线 */
         .divider {
             width: 1px;
             background: linear-gradient(180deg, transparent, rgba(255,255,255,0.1), transparent);
             position: absolute;
-            left: 50%;
             top: 10%;
             bottom: 10%;
             z-index: 10;
+        }
+
+        .divider-left {
+            left: 33.33%;
+        }
+
+        .divider-right {
+            left: 66.66%;
         }
     </style>
 </head>
@@ -518,10 +548,10 @@
         </div>
 
         <!-- 分割线 -->
-        <div class="divider"></div>
+        <div class="divider divider-left"></div>
 
-        <!-- 右侧：淘宝电商工具 -->
-        <div class="panel panel-right">
+        <!-- 中间：淘宝电商工具 -->
+        <div class="panel panel-center">
             <div class="floating-shape shape-1"></div>
             <div class="floating-shape shape-2"></div>
             <div class="panel-content">
@@ -540,6 +570,116 @@
                         <div class="tool-card">
                             <div class="tool-icon">📦</div>
                             <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分类 2 -->
+                <div class="tool-section">
+                    <div class="section-title">分类二</div>
+                    <div class="tool-grid">
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分类 3 -->
+                <div class="tool-section">
+                    <div class="section-title">分类三</div>
+                    <div class="tool-grid">
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分类 4 -->
+                <div class="tool-section">
+                    <div class="section-title">分类四</div>
+                    <div class="tool-grid">
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                        <div class="tool-card">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">工具名称</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分割线 -->
+        <div class="divider divider-right"></div>
+
+        <!-- 右侧：其他工具 -->
+        <div class="panel panel-right">
+            <div class="floating-shape shape-1"></div>
+            <div class="floating-shape shape-2"></div>
+            <div class="panel-content">
+                <div class="panel-header">
+                    <div class="panel-logo">具</div>
+                    <div class="panel-info">
+                        <div class="panel-title">其他工具</div>
+                        <div class="panel-subtitle">Other Tools</div>
+                    </div>
+                </div>
+
+                <!-- 分类 1 -->
+                <div class="tool-section">
+                    <div class="section-title">分类一</div>
+                    <div class="tool-grid">
+                        <div class="tool-card" onclick="window.open('https://wuyunlong888888.github.io/chachong.github.io/', '_blank')">
+                            <div class="tool-icon">📦</div>
+                            <div class="tool-name">查重工具</div>
                         </div>
                         <div class="tool-card">
                             <div class="tool-icon">📦</div>
